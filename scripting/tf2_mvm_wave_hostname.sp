@@ -8,7 +8,6 @@
 
 new Handle:g_hHostname = INVALID_HANDLE;
 new Handle:g_hDynamicHostname = INVALID_HANDLE;
-//new String:hostname[256]; // original hostname store
 new currentWave = 0;
 new currentMaxWave = 0;
 
@@ -16,7 +15,7 @@ public Plugin:myinfo =
 {
 	name = "TF2 MvM Wave Hostname",
 	author = "kimoto",
-	description = "auto change hostname by current wave and max wave",
+	description = "Auto change hostname by current wave and max wave",
 	version = PLUGIN_VERSION,
 	url = "http://kymt.me/"
 };
@@ -52,12 +51,11 @@ public Action:Event_BeginWave(Handle:event, const String:name[], bool:dontBroadc
 {
   new waveIndex = GetEventInt(event, "wave_index");
   new maxWaves = GetEventInt(event, "max_waves");
-  DebugPrint("wave: %d, max: %d", waveIndex, maxWaves);
+  LogMessage("wave: %d, max: %d", waveIndex, maxWaves);
 
   currentWave = waveIndex + 1;
   currentMaxWave = maxWaves;
   UpdateHostname(currentWave, currentMaxWave);
-
   return Plugin_Continue;
 }
 
@@ -69,24 +67,25 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
   new ent = FindEntityByClassname(-1, "tf_objective_resource");
   if(ent == -1){
     LogMessage("tf_objective_resource not found");
+    return Plugin_Continue;
   }
 
   // 現在のwave数取得
   new offset = FindSendPropInfo("CTFObjectiveResource", "m_nMannVsMachineWaveCount");
+  if(offset == -1 || offset == 0){
+    return Plugin_Continue;
+  }
   new current_wave = GetEntData(ent, offset);
 
   offset = FindSendPropInfo("CTFObjectiveResource", "m_nMannVsMachineMaxWaveCount");
+  if(offset == -1 || offset == 0){
+    return Plugin_Continue;
+  }
   new max_wave = GetEntData(ent, offset);
+
   UpdateHostname(current_wave, max_wave);
 
   LogMessage("updated round number");
   return Plugin_Continue;
-}
-
-public DebugPrint(const String:Message[], any:...)
-{
-  decl String:DebugBuff[256];
-  VFormat(DebugBuff, sizeof(DebugBuff), Message, 2);
-  LogMessage(DebugBuff);
 }
 
